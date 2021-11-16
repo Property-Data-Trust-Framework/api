@@ -1,0 +1,351 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "PDTF API",
+    "version": "0.1.0",
+    "license": {
+      "name": "MIT (proposed)",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "description": "This API defines how participants in the Property Data Trust Framework can securely share property data together with the verifiable provenance of that data",
+    "summary": "Property Data Trust Framework Open API"
+  },
+  "servers": [
+    {
+      "url": "http://api.pdtfexample.com",
+      "description": "Example PDTF data source"
+    }
+  ],
+  "paths": {
+    "/properties/{uprn}/claims": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string",
+            "example": "10092020024"
+          },
+          "name": "uprn",
+          "in": "path",
+          "required": true,
+          "description": "Unique Property Reference Number"
+        }
+      ],
+      "get": {
+        "summary": "Get all claims for a UPRN",
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {},
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Claim"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-properties-uprn-claims",
+        "description": "Get all claims available for a given UPRN",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "example": 1635408213
+            },
+            "in": "query",
+            "name": "since",
+            "description": "only return claims that have been added later than this timestamp"
+          }
+        ]
+      },
+      "post": {
+        "summary": "Add a new claim for a UPRN",
+        "operationId": "post-properties-uprn-claims",
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "description": "Add a new Claim for this UPRN",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Claim"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/properties/{uprn}/getState": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string",
+            "example": "10092020024"
+          },
+          "name": "uprn",
+          "in": "path",
+          "required": true,
+          "description": "Unique Property Reference Number"
+        }
+      ],
+      "get": {
+        "summary": "Get state of data",
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-properties-uprn-getCurrentState",
+        "description": "Retrieve a JSON representation of the state of the property data when all claims to date are applied",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "example": 1635408213
+            },
+            "in": "query",
+            "name": "at",
+            "description": "return the state of the data at the supplied timestamp (only using claims up to and including that time)"
+          }
+        ]
+      }
+    },
+    "/properties/{uprn}/getProvenanceMap": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string",
+            "example": "10092020024"
+          },
+          "name": "uprn",
+          "in": "path",
+          "required": true,
+          "description": "Unique Property Reference Number"
+        }
+      ],
+      "get": {
+        "summary": "Get a provenance map",
+        "tags": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "get-properties-uprn-getProvenanceMap",
+        "description": "Get a JSON representation of the property data where data elements are replaced an array of any claims that have been made for that path. A JSON pointer to a location in the property data itself will evaluate to the claims array, so that the provenance can be displayed alongside the data itself.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "example": 1635408213
+            },
+            "in": "query",
+            "name": "at",
+            "description": "return the provenance map at the specified timestamp, only including claims up to and including that time"
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Claim": {
+        "title": "Claim",
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "string",
+            "format": "uri",
+            "description": "The $id of the JSONSchema against which the path and data have been generated",
+            "example": "https://homebuyingandsellinggroup.co.uk/schemas/0.1.0/pdtf.json"
+          },
+          "path": {
+            "type": "string",
+            "description": "The JSON Pointer reference to the location in the schema corresponding to the new data as defined at https://datatracker.ietf.org/doc/html/rfc6901",
+            "example": "/propertyPack/propertyToBeSold/address"
+          },
+          "data": {
+            "type": "string",
+            "description": "A JSON object representing the segment of the overall data structure which is being provided.",
+            "example": "{ \"address1\": \"10 Railway Cuttings\", \"postcode\": \"SW10 1ER\"}"
+          },
+          "attributions": {
+            "type": "string",
+            "example": "Ordnance Survey data © Crown copyright and database right 2010"
+          },
+          "collectedAtTimestamp": {
+            "type": "number",
+            "description": "A",
+            "example": 1635409361
+          },
+          "provenance": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/IndividualProvenance"
+              },
+              {
+                "$ref": "#/components/schemas/DocumentedProvenance"
+              },
+              {
+                "$ref": "#/components/schemas/DigitalProvenance"
+              },
+              {
+                "$ref": "#/components/schemas/DigitalVerifiableProvenance"
+              }
+            ]
+          }
+        },
+        "required": [
+          "schema",
+          "path",
+          "data",
+          "collectedAtTimestamp",
+          "provenance"
+        ]
+      },
+      "IndividualProvenance": {
+        "title": "IndividualProvenance",
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "enum": ["Individual"]
+          },
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Smith"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "john@smiths.com"
+          }
+        },
+        "required": ["level", "firstName", "lastName", "email"]
+      },
+      "DocumentedProvenance": {
+        "title": "DocumentedProvenance",
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "enum": ["Documented"]
+          },
+          "firstName": {
+            "type": "string",
+            "example": "Jane"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Smith"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "jane@smiths.com"
+          },
+          "documents": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/DocumentReference"
+            }
+          }
+        },
+        "required": ["level", "firstName", "lastName", "email", "documents"]
+      },
+      "DigitalProvenance": {
+        "title": "DigitalProvenance",
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "enum": ["Digital"]
+          },
+          "sourceName": {
+            "type": "string"
+          },
+          "intermediaryName": {
+            "type": "string"
+          }
+        },
+        "required": ["level", "sourceName", "intermediaryName"]
+      },
+      "DigitalVerifiableProvenance": {
+        "title": "DigitalVerifiableProvenance",
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "enum": ["DigitalVerifiable"]
+          },
+          "sourceName": {
+            "type": "string"
+          },
+          "sourceUri": {
+            "type": "string",
+            "format": "uri"
+          },
+          "verificationUri": {
+            "type": "string",
+            "format": "uri"
+          },
+          "verificationResponseHash": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "level",
+          "sourceName",
+          "sourceUri",
+          "verificationUri",
+          "verificationResponseHash"
+        ]
+      },
+      "DocumentReference": {
+        "title": "DocumentReference",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "URI": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://www.dropbox.com/s/8xlpnqzxlmhcn0a/example.pdf?dl=032562"
+          }
+        },
+        "required": ["name", "URI"],
+        "description": "A reference to a supporting document image or PDF openly accessible via the supplied URI"
+      }
+    },
+    "securitySchemes": {}
+  }
+}
