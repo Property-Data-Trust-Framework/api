@@ -1,0 +1,618 @@
+openapi: 3.0.3
+info:
+  description: This API defines how participants in the Property Data Trust Framework
+    can securely share property data together with the verifiable provenance of that
+    data
+  version: Beta 1.0.1
+  title: Property Data Trust Framework Open API
+servers:
+  - url: http://api.pdtfexample.com
+    description: Example PDTF data source
+tags:
+  - name: claims
+    description: Operations related to a claims.
+paths:
+  /properties/{uprn}/claims:
+    post:
+      tags:
+        - claims
+      summary: Add Claims about a Property using Unique Property Reference Number
+      operationId: addPropertyClaim
+      description: Add a property claim to a property. This can be done by a claims provider.
+      responses:
+        '201':
+          description: 'Created property claim'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CreatePropertyClaim'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorised'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ClientError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+      requestBody:
+        description: Add Claims about a Property.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePropertyClaim'
+    patch:
+      tags:
+        - claims
+      summary: Update a Claim about a Property
+      description: Update a claim about a property.
+      operationId: UpdatePropertyClaim
+      parameters:
+        - name: uprn
+          in: path
+          required: true
+          description: Unique Property Reference Number
+          schema:
+            type: "string"
+            format: "string"
+            example: "12345678"
+      requestBody:
+        description: Update an Claim using UPRN.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePropertyClaim'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorised'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    get:
+      tags:
+        - claims
+      summary: Get Claims about a Property
+      description: Get Claims by uprn or path from schema. The uprn is required to get claims.
+      operationId: findPropertyClaim
+      parameters:
+        - name: "uprn"
+          in: "query"
+          required: true
+          description: Unique Property Reference Number
+          schema:
+            type: "string"
+            format: "string"
+            example: "d290f1ee-6c54-4b01-90e6-d701748f0854"
+        - name: path
+          in: "query"
+          required: false
+          description: "Path to schema entity"
+          schema:
+            type: "string"
+            format: "string"
+            example: "propertyPack/materialFacts/propertyToBeSold/councilTax"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GetPropertyClaimResponse'
+  /properties/{uprn}/claim-versions:
+    get:
+      tags:
+        - claims
+      summary: Get historic versions of a Claim
+      description: Get the historic versions of a specific claim. This will return the full details of how a claim was edited, and how it evolved over time.
+      operationId: getPropertyClaimBYVersions
+      parameters:
+        - name: uprn
+          in: path
+          required: true
+          description: Unique Property Reference Number
+          schema:
+            type: "string"
+            format: "string"
+            example: "12345678"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        recordedAt:
+                          type: string
+                          format: uuid
+                          example: "2021-10-22T13:21:11.488Z"
+                        claim:
+                          $ref: '#/components/schemas/GetPropertyClaimResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorised'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+  /properties/{uprn}/claim-summary:
+    get:
+      tags:
+        - claims
+      summary: Get summary of all the property claims grouped by schema
+      description: Get summary of all the claims.
+      operationId: getClaimSummaryByUPRN
+      parameters:
+        - name: uprn
+          in: path
+          required: true
+          description: Unique Property Reference Number
+          schema:
+            type: "string"
+            format: "string"
+            example: "12345678"
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uprn:
+                    type: string
+                    format: string
+                    example: "12345678"
+                  summary:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        credentialSchemaId:
+                          type: string
+                          format: string
+                          example: "https://homebuyingandsellinggroup.co.uk/schemas/0.1.0/pdtf.json"
+                        data:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/PdtfObject'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorised'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+components:
+  responses:
+    Success: #200
+      description: Success
+    Created: #201
+      description: Success - entity created
+    Accepted: #202
+      description: Accepted
+    Patched: #204
+      description: No Content
+    BadRequest: #400
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          examples:
+            sample1:
+              value:
+                timestamp: "2019-09-16T22:14:45.624+0000"
+                code: "400"
+                message: "Bad Request"
+                description: "Error code to explain why the request cannot be satisfied (eg. unsupported feature or restricted functionality)"
+                errors:
+                  - message: "Request Payload is malformed"
+                errorCode: 1000
+                errorReference: "WS-1000-123456"
+                path: "/path"
+    Unauthorised: #401
+      description: Unauthorised
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          examples:
+            sample1:
+              value:
+                timestamp: "2019-09-16T22:14:45.624+0000"
+                code: "401"
+                message: "Unauthorised"
+                description: "The provided authentication credentials are incorrect or not present. Generally, this is due to the lack of an 'Authorization' header"
+                errors:
+                  - message: "Unauthorised to access the resource"
+                errorCode: 1002
+                errorReference: "WS-1000-123456"
+                path: "/path"
+    Forbidden: #403
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          examples:
+            sample1:
+              value:
+                timestamp: "2019-09-16T22:14:45.624+0000"
+                code: "403"
+                message: "Forbidden"
+                description: "The authentication credentials request do not provide sufficient scope to fulfill the request"
+                errors:
+                  - message: "Forbidden to access the resource"
+                errorCode: 1004
+                errorReference: "WS-1000-123456"
+                path: "/path"
+    NotFound: #404
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          examples:
+            sample1:
+              value:
+                timestamp: "2019-09-16T22:14:45.624+0000"
+                code: "404"
+                message: "Not Found"
+                description: "The requested resource was not found"
+                errors:
+                  - message: "Requested resource not found"
+                errorCode: 1001
+                errorReference: "WS-1000-123456"
+                path: "/path"
+    ClientError: #422
+      description: Client Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          examples:
+            sample1:
+              value:
+                timestamp: "2019-09-16T22:14:45.624+0000"
+                code: "422"
+                message: "Client error"
+                description: "A validation error has occurred. The error response body will provide additional information on the failure(s)"
+                errors:
+                  - message: "Client error"
+                errorCode: 1003
+                errorReference: "WS-1000-123456"
+                path: "/path"
+    ServerError: #500
+      description: Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          examples:
+            sample1:
+              value:
+                timestamp: "2019-09-16T22:14:45.624+0000"
+                code: "500"
+                message: "Internal Server Error"
+                description: "The request triggered an unexpected error which will be logged and investigated."
+                errors:
+                  - message: "Internal Server Error"
+                errorCode: 1500
+                errorReference: "WS-1000-123456"
+                path: "/path"
+  #Schemas
+  schemas:
+    UpdatePropertyClaim:
+      title: Update property claim schema
+      allOf:
+        - $ref: '#/components/schemas/CreatePropertyClaim'
+    GetPropertyClaimResponse:
+      allOf:
+        - type: object
+          properties:
+            uprn:
+              type: string
+              format: string
+              example: "12345678"
+            data:
+              $ref: '#/components/schemas/CreatePropertyClaim'
+    CreatePropertyClaim:
+      title: Create Property Info
+      required:
+        - additionalLegalInformation
+        - materialFacts
+      type: object
+      properties:
+        verified_claims:
+          type: array
+          items:
+            type: object
+            properties:
+              verification:
+                type: object
+                properties:
+                  trust_framework:
+                    type: string
+                    example: PropertyDataTrustFramework
+                  credentialSchema:
+                    title: Credential Schema
+                    required:
+                      - id
+                      - type
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: string
+                        example: "https://homebuyingandsellinggroup.co.uk/schemas/0.1.0/pdtf.json"
+                      type:
+                        type: string
+                        format: string
+                        example: BASPI
+                  accuracy_score:
+                    $ref: '#/components/schemas/accuracy_score'
+                  tamperproof_score:
+                    $ref: '#/components/schemas/tamperproof_score'
+                  binding_score:
+                    $ref: '#/components/schemas/binding_score'
+                  matching_score:
+                    $ref: '#/components/schemas/matching_score'
+                  evidence:
+                    type: array
+                    items:
+                      type: string
+                    example: [{"type":"document","method":"pipp","time":"2012-04-22T11:30Z","document_details":{"type":"council_letter","issuer":{"name":"Brent council","country":"GB"},"date_of_issuance":"2010-03-23","date_of_expiry":"2020-03-22"},"attachments":[{"desc":"Front of document","content_type":"image/png","content":"Wkd0bWFtVnlhWFI2Wlc0Mk16VER2RFUyY0RRMWFUbDBNelJ1TlRjd31dzdaM1pTQXJaWGRsTXpNZ2RETmxDZwo="}]}]
+              claims:
+                anyOf:
+                  - type: object
+                    properties:
+                      'propertyToBeSold/address':
+                        type: object
+                        example: {"materialFacts":{"propertyToBeSold":{"councilTax":{"councilTaxBand":"A","councilTaxAffectingAlterations":{"yesNo":"Yes"}}}}}
+                  - type: object
+                    properties:
+                      'propertyToBeSold/geographicCoordinates':
+                        type: object
+    GetPropertyClaim:
+      required:
+        - additionalLegalInformation
+        - materialFacts
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "9d29871b-4f93-4aab-9ccc-eb63f5e1b494"
+        sellerSignOff:
+          type: boolean
+          format: boolean
+        verifiableCredential:
+          title: Credential Schema
+          required:
+            - credentialSchema
+            - credentialSubject
+          type: object
+          properties:
+            credentialSchema:
+              title: Credential Schema
+              required:
+                - id
+                - type
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: string
+                  example: "https://homebuyingandsellinggroup.co.uk/schemas/0.1.0/pdtf.json"
+                type:
+                  type: string
+                  format: string
+                  example: BASPI
+            credentialSubject:
+              type: string
+              format: string
+              example: {"materialFacts":{"propertyToBeSold":{"councilTax":{"councilTaxBand":"A","councilTaxAffectingAlterations":{"yesNo":"Yes"}}}}}
+            issuer:
+              $ref: '#/components/schemas/ClaimsProvider'
+    accuracy_score:
+      type: integer
+      description: Score.
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+    tamperproof_score:
+      type: integer
+      description: Score.
+      enum:
+        - 1
+        - 2
+        - 3
+    binding_score:
+      type: integer
+      description: Score.
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+    matching_score:
+      type: integer
+      description: Score.
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+    ClaimsProvider:
+      allOf:
+        - type: object
+          properties:
+            participantId:
+              type: string
+              format: uuid
+            companyName:
+              type: string
+              format: string
+              example: property logbook company
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+    PdtfObject:
+      title: BASPI Schema v2.0
+      required:
+        - propertyPack
+      type: object
+      properties:
+        propertyPack:
+          title: Property Pack
+          required:
+            - materialFacts
+          type: object
+          properties:
+            materialFacts:
+              title: Disclosure of material facts at the point of marketing
+              required:
+                - propertyToBeSold
+              type: object
+              properties:
+                propertyToBeSold:
+                  title: Property to be sold
+                  required:
+                    - councilTax
+                    - delayFactors
+                    - parkingArrangements
+                  type: object
+                  properties:
+                    delayFactors:
+                      $ref: '#/components/schemas/yesNoDetailIfYes'
+                    parkingArrangements:
+                      title: What parking arrangements are there?
+                      required:
+                        - parkingArrangementsType
+                      type: object
+                      properties:
+                        parkingArrangementsType:
+                          title: Choose the type of parking arrangements
+                          type: string
+                          enum:
+                            - Garage
+                            - Allocated parking space
+                            - Driveway
+                            - On street
+                            - Resident permit
+                            - Metered parking
+                            - Communal parking
+                            - None
+                            - Other
+                    councilTax:
+                      title: Council Tax
+                      required:
+                        - councilTaxAffectingAlterations
+                        - councilTaxBand
+                      type: object
+                      properties:
+                        councilTaxBand:
+                          title: Which Council Tax band does this property fall within?
+                          type: string
+                          enum:
+                            - A
+                            - B
+                            - C
+                            - D
+                            - E
+                            - F
+                            - G
+                            - H
+                        councilTaxAffectingAlterations:
+                          $ref: '#/components/schemas/yesNoDetailIfYes'
+    yesNoDetailIfYes:
+      title: ""
+      type: object
+      properties:
+        yesNo:
+          oneOf:
+            - properties:
+                yesNo:
+                  enum:
+                    - No
+            - properties:
+                yesNo:
+                  enum:
+                    - Yes
+                details:
+                  title: Details
+                  type: string
+                attachments:
+                  title: Attachments
+                  type: array
+                  items:
+                    type: string
+              required:
+                - details
+    Response:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: 'date-time'
+        code:
+          type: string
+        message:
+          type: string
+        description:
+          type: string
+        errors:
+          type: array
+          items:
+            type: string
+          example: [ "error"]
+        errorCode:
+          type: string
+        errorReference:
+          type: string
+        path:
+          type: string
+      required:
+        - code
+        - message
+  securitySchemes: {}
