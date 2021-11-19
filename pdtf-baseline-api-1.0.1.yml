@@ -19,6 +19,15 @@ paths:
       summary: Add Claims about a Property using Unique Property Reference Number
       operationId: addPropertyClaim
       description: Add a property claim to a property. This can be done by a claims provider.
+      parameters:
+        - name: uprn
+          in: path
+          required: true
+          description: Unique Property Reference Number
+          schema:
+            type: "string"
+            format: "string"
+            example: "12345678"
       responses:
         '201':
           description: 'Created property claim'
@@ -90,14 +99,14 @@ paths:
       description: Get Claims by uprn or path from schema. The uprn is required to get claims.
       operationId: findPropertyClaim
       parameters:
-        - name: "uprn"
-          in: "query"
+        - name: uprn
+          in: path
           required: true
           description: Unique Property Reference Number
           schema:
             type: "string"
             format: "string"
-            example: "d290f1ee-6c54-4b01-90e6-d701748f0854"
+            example: "12345678"
         - name: path
           in: "query"
           required: false
@@ -149,8 +158,8 @@ paths:
                       properties:
                         recordedAt:
                           type: string
-                          format: uuid
-                          example: "2021-10-22T13:21:11.488Z"
+                          format: string
+                          example: "12345678"
                         claim:
                           $ref: '#/components/schemas/GetPropertyClaimResponse'
         '400':
@@ -238,9 +247,7 @@ components:
                 message: "Bad Request"
                 description: "Error code to explain why the request cannot be satisfied (eg. unsupported feature or restricted functionality)"
                 errors:
-                  - message: "Request Payload is malformed"
-                errorCode: 1000
-                errorReference: "WS-1000-123456"
+                  - "Request Payload is malformed"
                 path: "/path"
     Unauthorised: #401
       description: Unauthorised
@@ -256,9 +263,7 @@ components:
                 message: "Unauthorised"
                 description: "The provided authentication credentials are incorrect or not present. Generally, this is due to the lack of an 'Authorization' header"
                 errors:
-                  - message: "Unauthorised to access the resource"
-                errorCode: 1002
-                errorReference: "WS-1000-123456"
+                  - "Unauthorised to access the resource"
                 path: "/path"
     Forbidden: #403
       description: Forbidden
@@ -274,9 +279,7 @@ components:
                 message: "Forbidden"
                 description: "The authentication credentials request do not provide sufficient scope to fulfill the request"
                 errors:
-                  - message: "Forbidden to access the resource"
-                errorCode: 1004
-                errorReference: "WS-1000-123456"
+                  - "Forbidden to access the resource"
                 path: "/path"
     NotFound: #404
       description: The specified resource was not found
@@ -292,9 +295,7 @@ components:
                 message: "Not Found"
                 description: "The requested resource was not found"
                 errors:
-                  - message: "Requested resource not found"
-                errorCode: 1001
-                errorReference: "WS-1000-123456"
+                  - "Requested resource not found"
                 path: "/path"
     ClientError: #422
       description: Client Error
@@ -310,9 +311,7 @@ components:
                 message: "Client error"
                 description: "A validation error has occurred. The error response body will provide additional information on the failure(s)"
                 errors:
-                  - message: "Client error"
-                errorCode: 1003
-                errorReference: "WS-1000-123456"
+                  - "Client error"
                 path: "/path"
     ServerError: #500
       description: Server Error
@@ -328,9 +327,7 @@ components:
                 message: "Internal Server Error"
                 description: "The request triggered an unexpected error which will be logged and investigated."
                 errors:
-                  - message: "Internal Server Error"
-                errorCode: 1500
-                errorReference: "WS-1000-123456"
+                  - "Internal Server Error"
                 path: "/path"
   #Schemas
   schemas:
@@ -392,7 +389,7 @@ components:
                   evidence:
                     type: array
                     items:
-                      type: string
+                      type: object
                     example: [{"type":"document","method":"pipp","time":"2012-04-22T11:30Z","document_details":{"type":"council_letter","issuer":{"name":"Brent council","country":"GB"},"date_of_issuance":"2010-03-23","date_of_expiry":"2020-03-22"},"attachments":[{"desc":"Front of document","content_type":"image/png","content":"Wkd0bWFtVnlhWFI2Wlc0Mk16VER2RFUyY0RRMWFUbDBNelJ1TlRjd31dzdaM1pTQXJaWGRsTXpNZ2RETmxDZwo="}]}]
               claims:
                 anyOf:
@@ -441,8 +438,8 @@ components:
                   format: string
                   example: BASPI
             credentialSubject:
-              type: string
-              format: string
+              type: object
+              format: object
               example: {"materialFacts":{"propertyToBeSold":{"councilTax":{"councilTaxBand":"A","councilTaxAffectingAlterations":{"yesNo":"Yes"}}}}}
             issuer:
               $ref: '#/components/schemas/ClaimsProvider'
@@ -606,10 +603,6 @@ components:
           items:
             type: string
           example: [ "error"]
-        errorCode:
-          type: string
-        errorReference:
-          type: string
         path:
           type: string
       required:
