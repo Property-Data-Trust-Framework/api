@@ -39,7 +39,7 @@ paths:
                   result:
                     type: array
                     items:
-                      $ref: '#/components/schemas/CreatePropertyClaim'
+                      $ref: '#/components/schemas/PropertyClaim'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -56,7 +56,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreatePropertyClaim'
+              $ref: '#/components/schemas/PropertyClaim'
     patch:
       tags:
         - claims
@@ -126,7 +126,7 @@ paths:
                   result:
                     type: array
                     items:
-                      $ref: '#/components/schemas/GetPropertyClaimResponse'
+                      $ref: '#/components/schemas/GetPropertyClaim'
   /properties/{uprn}/claim-versions:
     get:
       tags:
@@ -161,7 +161,7 @@ paths:
                           format: string
                           example: "12345678"
                         claim:
-                          $ref: '#/components/schemas/GetPropertyClaimResponse'
+                          $ref: '#/components/schemas/GetPropertyClaim'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -333,10 +333,10 @@ components:
   schemas:
     UpdatePropertyClaim:
       title: Update property claim schema
-      allOf:
-        - $ref: '#/components/schemas/CreatePropertyClaim'
-    GetPropertyClaimResponse:
-      allOf:
+      oneOf:
+        - $ref: '#/components/schemas/PropertyClaim'
+    GetPropertyClaim:
+      oneOf:
         - type: object
           properties:
             uprn:
@@ -344,8 +344,8 @@ components:
               format: string
               example: "12345678"
             data:
-              $ref: '#/components/schemas/CreatePropertyClaim'
-    CreatePropertyClaim:
+              $ref: '#/components/schemas/PropertyClaim'
+    PropertyClaim:
       title: Create Property Info
       required:
         - additionalLegalInformation
@@ -402,47 +402,6 @@ components:
                     properties:
                       'propertyToBeSold/geographicCoordinates':
                         type: object
-    GetPropertyClaim:
-      required:
-        - additionalLegalInformation
-        - materialFacts
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: "9d29871b-4f93-4aab-9ccc-eb63f5e1b494"
-        sellerSignOff:
-          type: boolean
-          format: boolean
-        verifiableCredential:
-          title: Credential Schema
-          required:
-            - credentialSchema
-            - credentialSubject
-          type: object
-          properties:
-            credentialSchema:
-              title: Credential Schema
-              required:
-                - id
-                - type
-              type: object
-              properties:
-                id:
-                  type: string
-                  format: string
-                  example: "https://homebuyingandsellinggroup.co.uk/schemas/0.1.0/pdtf.json"
-                type:
-                  type: string
-                  format: string
-                  example: BASPI
-            credentialSubject:
-              type: object
-              format: object
-              example: {"materialFacts":{"propertyToBeSold":{"councilTax":{"councilTaxBand":"A","councilTaxAffectingAlterations":{"yesNo":"Yes"}}}}}
-            issuer:
-              $ref: '#/components/schemas/ClaimsProvider'
     accuracy_score:
       type: integer
       description: Score.
@@ -477,23 +436,6 @@ components:
         - 2
         - 3
         - 4
-    ClaimsProvider:
-      allOf:
-        - type: object
-          properties:
-            participantId:
-              type: string
-              format: uuid
-            companyName:
-              type: string
-              format: string
-              example: property logbook company
-            createdAt:
-              type: string
-              format: date-time
-            updatedAt:
-              type: string
-              format: date-time
     PdtfObject:
       title: BASPI Schema v2.0
       required:
