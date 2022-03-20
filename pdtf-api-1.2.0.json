@@ -30,7 +30,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "https://homebuyingandsellinggroup.co.uk/schemas/pdtf-verified-claims.json#verified_claims"
+                  "$ref": "https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json"
                 }
               }
             }
@@ -62,7 +62,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "https://homebuyingandsellinggroup.co.uk/schemas/pdtf-verified-claims.json#verified_claims"
+                "$ref": "https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json"
               }
             }
           }
@@ -88,11 +88,8 @@
               }
             }
           },
-          "204": {
+          "404": {
             "description": "No Content - no claims are available for this property"
-          },
-          "": {
-            "description": ""
           }
         },
         "operationId": "getCurrentState",
@@ -170,11 +167,11 @@
             "{$request.body#/callbackUrl}": {
               "post": {
                 "requestBody": {
-                  "required": "true",
+                  "required": true,
                   "content": {
                     "application/json": {
                       "schema": {
-                        "$ref": "https://homebuyingandsellinggroup.co.uk/schemas/pdtf-verified-claims.json#verified_claims"
+                        "$ref": "https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json"
                       }
                     }
                   }
