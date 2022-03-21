@@ -15,6 +15,16 @@
       "description": "Example PDTF data source"
     }
   ],
+  "tags": [
+    {
+      "name": "properties",
+      "description": "Properties API"
+    },
+    {
+      "name": "transactions",
+      "description": "Transactions API"
+    }
+  ],
   "paths": {
     "/properties/{uprn}/claims": {
       "parameters": [
@@ -24,6 +34,9 @@
       ],
       "get": {
         "summary": "Get a list of claims for a given UPRN",
+        "tags": [
+          "properties"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -44,7 +57,10 @@
       },
       "post": {
         "summary": "Add claims",
-        "operationId": "getClaims",
+        "tags": [
+          "properties"
+        ],
+        "operationId": "addClaims",
         "responses": {
           "201": {
             "description": "Created"
@@ -69,7 +85,7 @@
         }
       }
     },
-    "/properties/{uprn}/getState": {
+    "/properties/{uprn}/propertyPack": {
       "parameters": [
         {
           "$ref": "#/components/parameters/uprn"
@@ -77,52 +93,33 @@
       ],
       "get": {
         "summary": "Get latest state of data",
+        "tags": [
+          "properties"
+        ],
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "JSON representation of property pack information"
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "HTML renedered property pack information"
                 }
               }
             }
           },
           "404": {
-            "description": "No Content - no claims are available for this property"
+            "description": "No claims are available for this property"
           }
         },
         "operationId": "getCurrentState",
-        "description": "Retrieve a JSON representation of the state of the property data when all claims to date are applied.",
-        "parameters": []
-      }
-    },
-    "/properties/{uprn}/getStateAsHTML": {
-      "parameters": [
-        {
-          "$ref": "#/components/parameters/uprn"
-        }
-      ],
-      "get": {
-        "summary": "Get the current state rendered as HTML",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/html": {
-                "schema": {
-                  "type": "string",
-                  "description": "HTML representation of property claims"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content - no claims are available for this property"
-          }
-        },
-        "operationId": "getStateAsHTML",
-        "description": "Get the current state rendered as HTML, using schema titles or - if not present - property names to create headings.",
+        "description": "Retrieve a JSON or HTML representation of the state of the property data when all claims to date are applied.",
         "parameters": []
       }
     },
@@ -134,6 +131,9 @@
       ],
       "post": {
         "summary": "Create a new webhook subscription for this UPRN",
+        "tags": [
+          "properties"
+        ],
         "operationId": "webhookSubscribe",
         "responses": {
           "201": {
@@ -188,7 +188,184 @@
       },
       "delete": {
         "summary": "Delete webhook",
+        "tags": [
+          "properties"
+        ],
         "operationId": "webhookUsubscribe",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "description": "Delete webhook for this UPRN for the current authenticated user, if any"
+      }
+    },
+    "/transaction/{id}/claims": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/transactionId"
+        }
+      ],
+      "get": {
+        "summary": "Get a list of claims on a property for a given transaction ID",
+        "tags": [
+          "transactions"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content - no claims are available for this property"
+          }
+        },
+        "operationId": "getTransactionClaims",
+        "parameters": []
+      },
+      "post": {
+        "summary": "Add claims for a property in a transaction",
+        "tags": [
+          "transactions"
+        ],
+        "operationId": "addTransactionClaims",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request - the supplied claims contain one or more validation errors"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "description": "Add one or more new claims for this UPRN",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transaction/{id}/propertyPack": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/transactionId"
+        }
+      ],
+      "get": {
+        "summary": "Get latest state of data",
+        "tags": [
+          "transactions"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "description": "JSON representation of property pack information"
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "HTML renedered property pack information"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No claims are available for this property"
+          }
+        },
+        "operationId": "getCurrentTransactionState",
+        "description": "Retrieve a JSON or HTML representation of the state of the property data when all claims to date are applied.",
+        "parameters": []
+      }
+    },
+    "/transaction/{id}/subscribe": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/transactionId"
+        }
+      ],
+      "post": {
+        "summary": "Create a new webhook subscription for this transaction",
+        "tags": [
+          "transactions"
+        ],
+        "operationId": "transactionwebhookSubscribe",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "callbackUrl": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "callbacks": {
+          "newClaims": {
+            "{$request.body#/callbackUrl}": {
+              "post": {
+                "requestBody": {
+                  "required": true,
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json"
+                      }
+                    }
+                  }
+                },
+                "responses": {
+                  "200": {
+                    "description": "Please send a 200 response to acknowledge the callback and prevent retries"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete webhook",
+        "tags": [
+          "transactions"
+        ],
+        "operationId": "transactionwebhookUnsubscribe",
         "responses": {
           "200": {
             "description": "OK"
@@ -209,6 +386,16 @@
           "example": 303789
         },
         "description": "Unique Property Reference Number"
+      },
+      "transactionId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "example": "123e4567-e89b-12d3-a456-426614174000"
+        },
+        "description": "Unique transaction identifier (UUID)"
       }
     }
   }
