@@ -13,25 +13,7 @@ tags:
   - name: transactions
     description: Transactions API
 paths:
-  /transaction/claims:
-    parameters:
-      - $ref: "#/components/parameters/partnerReferenceId"
-      - $ref: "#/components/parameters/uprn"
-    get:
-      summary: Get a list of claims on a property for a given transaction ID
-      tags:
-        - transactions
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json
-        "204":
-          description: No Content - no claims are available for this property
-      operationId: getTransactionClaims
-      parameters: []
+  /transactions:
     post:
       summary: Add claims for a property in a transaction
       tags:
@@ -50,10 +32,44 @@ paths:
         content:
           application/json:
             schema:
-              $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json
-  /transaction/propertyPack:
+              $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-transaction.json
+    get:
+      parameters:
+        - $ref: "#/components/parameters/uprn"
+      summary: Get a list of claims on a property for various query criteria
+      tags:
+        - transactions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-transaction.json
+        "204":
+          description: No Content - no claims are available for this property
+      operationId: getTransactionClaims
+  /transactions/{id}:
+    get:
+      parameters:
+        - $ref: "#/components/parameters/uprn"
+      summary: Get a list of claims on a property for a given transaction ID
+      tags:
+        - transactions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-transaction.json
+        "204":
+          description: No Content - no claims are available for this property
+      operationId: getTransactionClaims
+  /transactions/propertyPack:
     parameters:
-      - $ref: "#/components/parameters/partnerReferenceId"
+      - $ref: "#/components/parameters/transactionIdInQueryParameter"
+      - $ref: "#/components/parameters/uprn"
     get:
       summary: Get latest state of data
       tags:
@@ -77,7 +93,7 @@ paths:
       parameters: []
   /transaction/{id}/subscribe:
     parameters:
-      - $ref: "#/components/parameters/partnerReferencePathId"
+      - $ref: "#/components/parameters/transactionIdInPathParameter"
     post:
       summary: Create a new webhook subscription for this transaction
       tags:
@@ -124,15 +140,15 @@ paths:
       description: Delete webhook for this UPRN for the current authenticated user, if any
 components:
   parameters:
-    partnerReferencePathId:
+    transactionIdInPathParameter:
       required: true
       name: id
       in: path
       schema:
         type: string
       description: Unique identifier for the transaction in the partner environment
-    partnerReferenceId:
-      name: partnerReferenceId
+    transactionIdInQueryParameter:
+      name: transactionId
       in: query
       schema:
         type: string
