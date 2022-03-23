@@ -15,9 +15,9 @@ tags:
 paths:
   /transactions:
     post:
-      summary: Add claims for a property in a transaction
       tags:
         - transactions
+      summary: Add claims on a transaction
       operationId: addTransactionClaims
       responses:
         "201":
@@ -26,7 +26,7 @@ paths:
           description: Bad Request - the supplied claims contain one or more validation errors
         "401":
           description: Unauthorized
-      description: Add one or more new claims for this UPRN
+      description: Add claims on a transaction
       requestBody:
         required: true
         content:
@@ -36,7 +36,7 @@ paths:
     get:
       parameters:
         - $ref: "#/components/parameters/uprn"
-      summary: Get a list of claims on a property for various query criteria
+      summary: Get a list of claims on a transaction
       tags:
         - transactions
       responses:
@@ -46,14 +46,12 @@ paths:
             application/json:
               schema:
                 $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-transaction.json
-        "204":
-          description: No Content - no claims are available for this property
-      operationId: getTransactionClaims
+      operationId: getTransactions
   /transactions/{id}:
     get:
       parameters:
-        - $ref: "#/components/parameters/uprn"
-      summary: Get a list of claims on a property for a given transaction ID
+        - $ref: "#/components/parameters/transactionIdInQueryParameter"
+      summary: Get a list of claims for a given transaction ID
       tags:
         - transactions
       responses:
@@ -63,9 +61,10 @@ paths:
             application/json:
               schema:
                 $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-transaction.json
-        "204":
-          description: No Content - no claims are available for this property
-      operationId: getTransactionClaims
+        "404":
+          description: No claims are available for this property
+      description: Get a list of claims for a given transaction ID
+      operationId: getTransactionsById
   /transactions/propertyPack:
     parameters:
       - $ref: "#/components/parameters/transactionIdInQueryParameter"
@@ -86,12 +85,10 @@ paths:
               schema:
                 type: string
                 description: HTML renedered property pack information
-        "404":
-          description: No claims are available for this property
       operationId: getCurrentTransactionState
       description: Retrieve a JSON or HTML representation of the state of the property data when all claims to date are applied.
       parameters: []
-  /transaction/{id}/subscribe:
+  /transactions/{id}/subscribe:
     parameters:
       - $ref: "#/components/parameters/transactionIdInPathParameter"
     post:
