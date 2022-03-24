@@ -17,7 +17,7 @@ paths:
     post:
       tags:
         - transactions
-      summary: Add claims on a transaction
+      summary: Create a transaction
       operationId: addTransactionClaims
       responses:
         "201":
@@ -26,13 +26,13 @@ paths:
           description: Bad Request - the supplied claims contain one or more validation errors
         "401":
           description: Unauthorized
-      description: Add claims on a transaction
+      description: Create a transaction
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-transaction.json
+              $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json
     get:
       parameters:
         - $ref: "#/components/parameters/uprn"
@@ -45,12 +45,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-transaction.json
+                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json
       operationId: getTransactions
   /transactions/{id}:
     get:
       parameters:
-        - $ref: "#/components/parameters/transactionIdInQueryParameter"
+        - $ref: "#/components/parameters/transactionIdInPathParameter"
       summary: Get a list of claims for a given transaction ID
       tags:
         - transactions
@@ -60,7 +60,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-transaction.json
+                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json
         "404":
           description: No claims are available for this property
       description: Get a list of claims for a given transaction ID
@@ -143,12 +143,14 @@ components:
       in: path
       schema:
         type: string
+        format: uuid
       description: Unique identifier for the transaction in the partner environment
     transactionIdInQueryParameter:
       name: transactionId
       in: query
       schema:
         type: string
+        format: uuid
       description: Unique identifier for the transaction in the partner environment
     uprn:
       name: uprn
