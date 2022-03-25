@@ -26,7 +26,7 @@ paths:
           description: Bad Request - the supplied claims contain one or more validation errors
         "401":
           description: Unauthorized
-      description: Create a transaction
+      description: Create a transaction, optionally add verified claims
       requestBody:
         required: true
         content:
@@ -36,7 +36,45 @@ paths:
     get:
       parameters:
         - $ref: "#/components/parameters/uprn"
-      summary: Get a list of claims on a transaction
+        - $ref: "#/components/parameters/transactionStatus"
+      summary: Get transactionIds by UPRN and status
+      tags:
+        - transactions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                description: List of transactionIds and transaction status
+      operationId: getTransactions
+  /transactions/{id}:
+    get:
+      parameters:
+        - $ref: "#/components/parameters/transactionIdInPathParameter"
+      summary: Get latest state of verified claims on the transaction
+      tags:
+        - transactions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                description: JSON representation of transaction information
+            text/html:
+              schema:
+                type: string
+                description: HTML renedered transaction information
+      operationId: getCurrentTransactionState
+      description: Retrieve a JSON or HTML representation of the state of the transaction data when all claims to date are applied.
+  /transactions/{id}/claims:
+    post:
+      parameters:
+        - $ref: "#/components/parameters/transactionIdInPathParameter"
+      summary: Add verified claims on a transaction
       tags:
         - transactions
       responses:
@@ -46,8 +84,10 @@ paths:
             application/json:
               schema:
                 $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json
-      operationId: getTransactions
-  /transactions/{id}:
+        "404":
+          description: No claims are available for this property
+      description: Get a list of claims for a given transaction ID
+      operationId: postVerifiedClaimsByTransactionId
     get:
       parameters:
         - $ref: "#/components/parameters/transactionIdInPathParameter"
@@ -62,32 +102,9 @@ paths:
               schema:
                 $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json
         "404":
-          description: No claims are available for this property
+          description: No verified claims are available for this property
       description: Get a list of claims for a given transaction ID
-      operationId: getTransactionsById
-  /transactions/propertyPack:
-    parameters:
-      - $ref: "#/components/parameters/transactionIdInQueryParameter"
-      - $ref: "#/components/parameters/uprn"
-    get:
-      summary: Get latest state of data
-      tags:
-        - transactions
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: string
-                description: JSON representation of property pack information
-            text/html:
-              schema:
-                type: string
-                description: HTML renedered property pack information
-      operationId: getCurrentTransactionState
-      description: Retrieve a JSON or HTML representation of the state of the property data when all claims to date are applied.
-      parameters: []
+      operationId: getVerifiedClaimsByTransactionId
   /transactions/{id}/subscribe:
     parameters:
       - $ref: "#/components/parameters/transactionIdInPathParameter"
@@ -144,17 +161,17 @@ components:
       schema:
         type: string
         format: uuid
-      description: Unique identifier for the transaction in the partner environment
-    transactionIdInQueryParameter:
-      name: transactionId
-      in: query
-      schema:
-        type: string
-        format: uuid
-      description: Unique identifier for the transaction in the partner environment
+      description: Unique identifier for the transaction
     uprn:
       name: uprn
       in: query
       schema:
         type: string
       description: Unique Property Reference Number
+    transactionStatus:
+      name: status
+      in: query
+      schema:
+        type: string
+        enum: [active, completed, cancelled]
+      description: Transaction status
