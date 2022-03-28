@@ -22,6 +22,12 @@ paths:
       responses:
         "201":
           description: Created
+          headers:
+            location:
+              schema:
+                type: string
+                format: UUID
+              description: Unique identifier of the transaction
         "400":
           description: Bad Request - the supplied claims contain one or more validation errors
         "401":
