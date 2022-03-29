@@ -1,0 +1,183 @@
+openapi: 3.0.3
+info:
+  title: Property Data Trust Framework API
+  version: 1.2.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  description: This API defines how participants in the UK Property Data Trust Framework can securely share property data, together with the verifiable provenance of that data. The API is built around a variation of OpenID Connect Verified Claims schema.
+servers:
+  - url: http://api.pdtf-example.com
+    description: Example PDTF data source
+tags:
+  - name: transactions
+    description: Transactions API
+paths:
+  /transactions:
+    post:
+      tags:
+        - transactions
+      summary: Create a transaction
+      operationId: addTransactionClaims
+      responses:
+        "201":
+          description: Created
+          headers:
+            location:
+              schema:
+                type: string
+                format: UUID
+              description: Unique identifier of the transaction
+        "400":
+          description: Bad Request - the supplied claims contain one or more validation errors
+        "401":
+          description: Unauthorized
+      description: Create a transaction, optionally add verified claims
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json
+    get:
+      parameters:
+        - $ref: "#/components/parameters/uprn"
+        - $ref: "#/components/parameters/transactionStatus"
+      summary: Get transactionIds by UPRN and status
+      tags:
+        - transactions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                description: List of transactionIds and transaction status
+      operationId: getTransactions
+  /transactions/{id}:
+    get:
+      parameters:
+        - $ref: "#/components/parameters/transactionIdInPathParameter"
+      summary: Get latest state of verified claims on the transaction
+      tags:
+        - transactions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                description: JSON representation of transaction information
+            text/html:
+              schema:
+                type: string
+                description: HTML renedered transaction information
+      operationId: getCurrentTransactionState
+      description: Retrieve a JSON or HTML representation of the state of the transaction data when all claims to date are applied.
+  /transactions/{id}/claims:
+    post:
+      parameters:
+        - $ref: "#/components/parameters/transactionIdInPathParameter"
+      summary: Add verified claims on a transaction
+      tags:
+        - transactions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json
+        "404":
+          description: No claims are available for this property
+      description: Get a list of claims for a given transaction ID
+      operationId: postVerifiedClaimsByTransactionId
+    get:
+      parameters:
+        - $ref: "#/components/parameters/transactionIdInPathParameter"
+      summary: Get a list of claims for a given transaction ID
+      tags:
+        - transactions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json
+        "404":
+          description: No verified claims are available for this property
+      description: Get a list of claims for a given transaction ID
+      operationId: getVerifiedClaimsByTransactionId
+  /transactions/{id}/subscribe:
+    parameters:
+      - $ref: "#/components/parameters/transactionIdInPathParameter"
+    post:
+      summary: Create a new webhook subscription for this transaction
+      tags:
+        - transactions
+      operationId: transactionwebhookSubscribe
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                callbackUrl:
+                  type: string
+                  format: uri
+      callbacks:
+        newClaims:
+          "{$request.body#/callbackUrl}":
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json
+              responses:
+                "200":
+                  description: Please send a 200 response to acknowledge the callback and prevent retries
+    delete:
+      summary: Delete webhook
+      tags:
+        - transactions
+      operationId: transactionwebhookUnsubscribe
+      responses:
+        "200":
+          description: OK
+      description: Delete webhook for this UPRN for the current authenticated user, if any
+components:
+  parameters:
+    transactionIdInPathParameter:
+      required: true
+      name: id
+      in: path
+      schema:
+        type: string
+        format: uuid
+      description: Unique identifier for the transaction
+    uprn:
+      name: uprn
+      in: query
+      schema:
+        type: string
+      description: Unique Property Reference Number
+    transactionStatus:
+      name: status
+      in: query
+      schema:
+        type: string
+        enum: [active, completed, cancelled]
+      description: Transaction status
