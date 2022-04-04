@@ -22,17 +22,21 @@ paths:
       responses:
         "201":
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/transaction-response"
           headers:
             location:
               schema:
                 type: string
-                format: UUID
-              description: Unique identifier of the transaction
+                format: uri
+              description: URI containing transaction identifier
         "400":
           description: Bad Request - the supplied claims contain one or more validation errors
         "401":
           description: Unauthorized
-      description: Create a transaction, optionally add verified claims
+      description: Create a transaction
       requestBody:
         required: true
         content:
@@ -181,3 +185,15 @@ components:
         type: string
         enum: [active, completed, cancelled]
       description: Transaction status
+  schemas:
+    transaction-response:
+      type: object
+      description: Transaction response
+      properties:
+        $schema: 
+          type: "string"
+          example: "https://homebuyingandsellinggroup.co.uk/schemas/pdtf-transaction.json"
+        transactionId:
+          title: "UUID for the transaction"
+          type: "string"
+          format: "uuid"
