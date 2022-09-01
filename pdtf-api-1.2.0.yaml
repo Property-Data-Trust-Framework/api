@@ -53,6 +53,7 @@ paths:
               schema:
                 type: object
                 description: List of minified transaction objects containing 'transactionId, uprn and status, createdAt, updatedAt'
+                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-transaction-search-results.json
       operationId: getTransactions
   /transactions/{id}:
     get:
