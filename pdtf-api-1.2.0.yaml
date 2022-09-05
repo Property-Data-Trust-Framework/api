@@ -37,12 +37,7 @@ paths:
         "401":
           description: Unauthorized
       description: Create a transaction
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json
+  /transactions/search:
     get:
       parameters:
         - $ref: "#/components/parameters/uprn"
@@ -56,8 +51,9 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-                description: List of transactionIds and transaction status
+                type: object
+                description: List of minified transaction objects containing 'transactionId, uprn and status, createdAt, updatedAt'
+                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-transaction-search-results.json
       operationId: getTransactions
   /transactions/{id}:
     get:
