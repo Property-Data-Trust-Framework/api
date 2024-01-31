@@ -9,9 +9,13 @@ info:
 servers:
   - url: http://api.pdtf-example.com
     description: Example PDTF data source
+  - url: https://propdata.org.uk/trustframework/api
+    description: Official PDTF discovery service
 tags:
   - name: transactions
     description: Transactions API
+  - name: discovery
+    description: Discovery API
 paths:
   /transactions:
     post:
@@ -53,7 +57,7 @@ paths:
               schema:
                 type: object
                 description: List of minified transaction objects containing 'transactionId, uprn and status, createdAt, updatedAt'
-                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-transaction-search-results.json
+                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/v1/pdtf-transaction-search-results.json
       operationId: getTransactions
   /transactions/{id}:
     get:
@@ -89,7 +93,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json
+                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/v1/pdtf-verified-claims.json
         "404":
           description: No claims are available for this property
       description: Get a list of claims for a given transaction ID
@@ -106,7 +110,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json
+                $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/v1/pdtf-verified-claims.json
         "404":
           description: No verified claims are available for this property
       description: Get a list of claims for a given transaction ID
@@ -145,7 +149,7 @@ paths:
                 content:
                   application/json:
                     schema:
-                      $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/pdtf-verified-claims.json
+                      $ref: https://raw.githubusercontent.com/Property-Data-Trust-Framework/schemas/master/src/schemas/v1/pdtf-verified-claims.json
               responses:
                 "200":
                   description: Please send a 200 response to acknowledge the callback and prevent retries
@@ -188,7 +192,7 @@ components:
       properties:
         $schema: 
           type: "string"
-          example: "https://homebuyingandsellinggroup.co.uk/schemas/pdtf-transaction.json"
+          example: "https://trust.propdata.org.uk/schemas/v1/pdtf-transaction.json"
         transactionId:
           title: "UUID for the transaction"
           type: "string"
