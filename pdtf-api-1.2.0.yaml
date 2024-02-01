@@ -9,13 +9,9 @@ info:
 servers:
   - url: http://api.pdtf-example.com
     description: Example PDTF data source
-  - url: https://propdata.org.uk/trustframework/api
-    description: Official PDTF discovery service
 tags:
   - name: transactions
     description: Transactions API
-  - name: discovery
-    description: Discovery API
 paths:
   /transactions:
     post:
